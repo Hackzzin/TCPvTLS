@@ -10,4 +10,4 @@ BUFFER_SIZE = 4 * 1024  # 4 KB
 
 # Caminho para o certificado da CA (usado apenas no modo TLS)
 # Caso você não valide o certificado do servidor, pode deixar None
-CA_CERT_PATH = "certs/ca.crt"
+CA_CERT_PATH = "certificados/ca.crt"
