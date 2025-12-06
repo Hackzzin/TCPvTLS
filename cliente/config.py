@@ -6,7 +6,7 @@ SERVER_PORT_PLAIN = 5000    # Porta para conexões sem TLS
 SERVER_PORT_TLS = 5001      # Porta para conexões com TLS
 
 # Tamanho do buffer para envio (em bytes)
-BUFFER_SIZE = 10 * 1024  # 10 KB
+BUFFER_SIZE = 4 * 1024  # 4 KB
 
 # Caminho para o certificado da CA (usado apenas no modo TLS)
 # Caso você não valide o certificado do servidor, pode deixar None
