@@ -21,15 +21,15 @@ def main():
 
     # Verifica existência antes de enviar
     if not os.path.isfile(filepath):
-        print(f"[ERRO] Arquivo não encontrado em: {filepath}")
+        print(f"\n[ERRO] Arquivo não encontrado em: {filepath}")
         return
 
     # Envio
     if mode == "plain":
-        print("[INFO] Enviando arquivo em texto plano...")
+        print("\n[INFO] Enviando arquivo em texto plano...")
         send_plain(filepath)
     else:
-        print("[INFO] Enviando arquivo com TLS...")
+        print("\n[INFO] Enviando arquivo com TLS...")
         send_tls(filepath)
 
 
