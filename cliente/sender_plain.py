@@ -14,7 +14,7 @@ def send_plain(filepath: str):
     try:
         # Cria socket TCP normal
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        client_socket.connect((config.SERVER_HOST, config.SERVER_PORT))
+        client_socket.connect((config.SERVER_HOST, config.SERVER_PORT_PLAIN))
 
         # Envia primeiro o nome do arquivo (simples protocolo)
         filename = get_filename(filepath)

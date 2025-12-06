@@ -32,7 +32,7 @@ def send_tls(filepath: str):
         )
 
         # Conecta ao servidor TLS
-        tls_socket.connect((config.SERVER_HOST, config.SERVER_PORT))
+        tls_socket.connect((config.SERVER_HOST, config.SERVER_PORT_TLS))
 
         # Envia o nome do arquivo (mesma ideia do sender_plain.py)
         filename = get_filename(filepath)
