@@ -38,7 +38,7 @@ def gerar_ca():
         .public_key(ca_key.public_key())
         .serial_number(x509.random_serial_number())
         .not_valid_before(datetime.utcnow())
-        .not_valid_after(datetime.utcnow() + timedelta(days=3650))  # 10 anos
+        .not_valid_after(datetime.utcnow() + timedelta(days=365))  # 1 ano
         .add_extension(x509.BasicConstraints(ca=True, path_length=None), critical=True)
         .sign(private_key=ca_key, algorithm=hashes.SHA256())
     )
