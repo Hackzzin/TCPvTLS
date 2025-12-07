@@ -46,3 +46,6 @@ def start_server_plain():
         finally:
             conn.close()
             print("[CONEXÃO] Encerrada.\n")
+
+if __name__ == "__main__":
+    start_server_plain()
