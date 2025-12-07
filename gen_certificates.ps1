@@ -1,4 +1,26 @@
-$OpenSSL = "C:\Program Files\OpenSSL-Win64\bin\openssl.exe"
+# === Carregar .env ===
+$envFile = Join-Path $PSScriptRoot "\.env"
+
+if (-Not (Test-Path $envFile)) {
+    Write-Host "[ERRO] Arquivo .env não encontrado. Crie um .env contendo: OPENSSL_PATH=<caminho>"
+    exit 1
+}
+
+Get-Content $envFile | ForEach-Object {
+    if ($_ -match "^([^=]+)=(.*)$") {
+        $name = $matches[1]
+        $value = $matches[2]
+        Set-Item -Path "Env:$name" -Value $value
+    }
+}
+
+# Agora a variável está disponível como $env:OPENSSL_PATH
+if (-Not $env:OPENSSL_PATH) {
+    Write-Host "[ERRO] OPENSSL_PATH não definido no .env."
+    exit 1
+}
+
+$OpenSSL = $env:OPENSSL_PATH
 
 # ================================
 # Script PowerShell para gerar:
@@ -33,8 +55,8 @@ Write-Host "`n[3/8] Gerando CSR do servidor..."
 Write-Host "`n[4/8] Criando arquivo SAN..."
 @"
 authorityKeyIdentifier=keyid,issuer
-basicConstraints=CA:FALSE
-keyUsage = digitalSignature, keyEncipherment
+basicConstraints=CA:TRUE
+keyUsage = keyCertSign, cRLSign, digitalSignature, keyEncipherment
 extendedKeyUsage = serverAuth
 subjectAltName = @alt_names
 
