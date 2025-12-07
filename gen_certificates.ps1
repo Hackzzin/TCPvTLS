@@ -29,19 +29,33 @@ $OpenSSL = $env:OPENSSL_PATH
 # - Certificado Cliente (cliente.crt, cliente.key)
 # ================================
 
-# Caminho da saída
+# Caminho da saída (path absoluto baseado no script root para evitar diretórios aninhados)
 $certDir = "certificados"
-if (-Not (Test-Path $certDir)) {
-    New-Item -ItemType Directory $certDir | Out-Null
+$fullCertDir = Join-Path $PSScriptRoot $certDir
+if (-Not (Test-Path $fullCertDir)) {
+    New-Item -ItemType Directory -Path $fullCertDir | Out-Null
 }
 
-Write-Host "Gerando certificados em: $certDir"
-Set-Location $certDir
+Write-Host "Gerando certificados em: $fullCertDir"
+Set-Location $fullCertDir
 
 # -------- 1. Cria CA --------
 Write-Host "`n[1/8] Gerando CA..."
 & $OpenSSL genrsa -out ca.key 4096
-& $OpenSSL req -x509 -new -nodes -key ca.key -sha256 -days 3650 -out ca.crt -subj "/CN=MinhaCA"
+
+# Cria arquivo de extensões para CA (marca basicConstraints como critical)
+@"
+[ v3_ca ]
+basicConstraints = critical, CA:TRUE
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = keyid,issuer
+keyUsage = keyCertSign, cRLSign
+"@ | Set-Content ca_ext.ext
+
+# Alguns builds do OpenSSL no Windows reclamam de opções combinadas em 'req -x509'.
+# Em vez disso, criaremos um CSR para a CA e depois assinamos com 'x509 -req -signkey'.
+& $OpenSSL req -new -key ca.key -out ca.csr -subj "/CN=MinhaCA"
+& $OpenSSL x509 -req -in ca.csr -signkey ca.key -days 3650 -sha256 -out ca.crt -extfile ca_ext.ext -extensions v3_ca
 
 # -------- 2. Cria chave servidor --------
 Write-Host "`n[2/8] Gerando chave do servidor..."
@@ -52,11 +66,12 @@ Write-Host "`n[3/8] Gerando CSR do servidor..."
 & $OpenSSL req -new -key servidor.key -out servidor.csr -subj "/CN=localhost"
 
 # -------- 4. Cria arquivo de extensões SAN --------
-Write-Host "`n[4/8] Criando arquivo SAN..."
+Write-Host "`n[4/8] Criando arquivo SAN para o servidor..."
 @"
+[ v3_req ]
 authorityKeyIdentifier=keyid,issuer
-basicConstraints=CA:TRUE
-keyUsage = keyCertSign, cRLSign, digitalSignature, keyEncipherment
+basicConstraints=CA:FALSE
+keyUsage = digitalSignature, keyEncipherment
 extendedKeyUsage = serverAuth
 subjectAltName = @alt_names
 
@@ -68,7 +83,7 @@ IP.1 = 127.0.0.1
 # -------- 5. Assina certificado do Servidor --------
 Write-Host "`n[5/8] Assinando certificado do servidor com a CA (com SAN)..."
 & $OpenSSL x509 -req -in servidor.csr -CA ca.crt -CAkey ca.key -CAcreateserial `
-    -out servidor.crt -days 825 -sha256 -extfile san_server.ext
+    -out servidor.crt -days 825 -sha256 -extfile san_server.ext -extensions v3_req
 
 # -------- 6. Cria chave cliente --------
 Write-Host "`n[6/8] Gerando chave do cliente..."

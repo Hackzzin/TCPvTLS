@@ -1,6 +1,7 @@
+[ v3_req ]
 authorityKeyIdentifier=keyid,issuer
-basicConstraints=CA:TRUE
-keyUsage = keyCertSign, cRLSign, digitalSignature, keyEncipherment
+basicConstraints=CA:FALSE
+keyUsage = digitalSignature, keyEncipherment
 extendedKeyUsage = serverAuth
 subjectAltName = @alt_names
 
