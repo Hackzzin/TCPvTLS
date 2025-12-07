@@ -4,9 +4,9 @@ import os
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))      # servidor/
 ROOT_DIR = os.path.dirname(BASE_DIR)                       # TCPvTLS/
 
-SERVER_CERT = os.path.join(ROOT_DIR, "certificados", "servidor.crt")
-SERVER_KEY  = os.path.join(ROOT_DIR, "certificados", "servidor.key")
-CA_CERT     = os.path.join(ROOT_DIR, "certificados", "ca.crt")
+SERVER_CERT = "certificados/server_cert.pem"
+SERVER_KEY  = "certificados/server_key.pem"
+CA_CERT     = "certificados/ca_cert.pem"
 
 # Endereços e portas de escuta
 SERVER_HOST = "0.0.0.0"     # Aceita conexões externas também

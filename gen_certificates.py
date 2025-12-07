@@ -16,14 +16,14 @@ os.makedirs(PASTA, exist_ok=True)
 # 1️⃣ GERAR CA (Certificate Authority)
 # =====================================================
 def gerar_ca():
-    print("[1/4] Gerando chave privada da CA...")
+    print("[1/3] Gerando chave privada da CA...")
 
     ca_key = rsa.generate_private_key(
         public_exponent=65537,
         key_size=2048
     )
 
-    print("[2/4] Criando certificado da CA...")
+    print("[2/3] Criando certificado da CA...")
 
     subject = issuer = x509.Name([
         x509.NameAttribute(NameOID.COUNTRY_NAME, "BR"),
@@ -38,12 +38,20 @@ def gerar_ca():
         .public_key(ca_key.public_key())
         .serial_number(x509.random_serial_number())
         .not_valid_before(datetime.utcnow())
-        .not_valid_after(datetime.utcnow() + timedelta(days=365))  # 1 ano
+        .not_valid_after(datetime.utcnow() + timedelta(days=365))
         .add_extension(x509.BasicConstraints(ca=True, path_length=None), critical=True)
-        .sign(private_key=ca_key, algorithm=hashes.SHA256())
+        .add_extension(
+            x509.SubjectKeyIdentifier.from_public_key(ca_key.public_key()), 
+            critical=False
+        )
+        .add_extension(
+            x509.AuthorityKeyIdentifier.from_issuer_public_key(ca_key.public_key()), 
+            critical=False
+        )
+        .sign(ca_key, hashes.SHA256())
     )
 
-    print("[3/4] Salvando chave e certificado da CA...")
+    print("[3/3] Salvando arquivos...")
 
     with open(f"{PASTA}/ca_key.pem", "wb") as f:
         f.write(ca_key.private_bytes(
@@ -55,7 +63,7 @@ def gerar_ca():
     with open(f"{PASTA}/ca_cert.pem", "wb") as f:
         f.write(ca_cert.public_bytes(Encoding.PEM))
 
-    print("[OK] CA gerada com sucesso!\n")
+    print("[OK] CA gerada!\n")
     return ca_key, ca_cert
 
 
@@ -76,30 +84,37 @@ def gerar_certificado_servidor(ca_key, ca_cert):
         x509.NameAttribute(NameOID.COMMON_NAME, "localhost"),
     ])
 
-    print("[2/4] Gerando CSR (pedido de certificado)...")
-
-    csr = (
-        x509.CertificateSigningRequestBuilder()
-        .subject_name(subject)
-        .sign(server_key, hashes.SHA256())
-    )
-
-    print("[3/4] Assinando certificado do servidor com a CA...")
+    print("[2/4] Gerando certificado...")
 
     server_cert = (
         x509.CertificateBuilder()
-        .subject_name(csr.subject)
+        .subject_name(subject)
         .issuer_name(ca_cert.subject)
         .public_key(server_key.public_key())
         .serial_number(x509.random_serial_number())
         .not_valid_before(datetime.utcnow())
         .not_valid_after(datetime.utcnow() + timedelta(days=365))
         .add_extension(x509.BasicConstraints(ca=False, path_length=None), critical=True)
-        .add_extension(x509.ExtendedKeyUsage([ExtendedKeyUsageOID.SERVER_AUTH]), critical=False)
+        .add_extension(
+            x509.ExtendedKeyUsage([ExtendedKeyUsageOID.SERVER_AUTH]),
+            critical=False
+        )
+        .add_extension(
+            x509.SubjectAlternativeName([x509.DNSName("localhost")]),
+            critical=False
+        )
+        .add_extension(
+            x509.SubjectKeyIdentifier.from_public_key(server_key.public_key()),
+            critical=False
+        )
+        .add_extension(
+            x509.AuthorityKeyIdentifier.from_issuer_public_key(ca_key.public_key()),
+            critical=False
+        )
         .sign(private_key=ca_key, algorithm=hashes.SHA256())
     )
 
-    print("[4/4] Salvando chave e certificado do servidor...")
+    print("[3/4] Salvando chave e certificado...")
 
     with open(f"{PASTA}/server_key.pem", "wb") as f:
         f.write(server_key.private_bytes(
