@@ -27,8 +27,10 @@ def recv_exact(sock, total_bytes):
 
 
 def start_server_plain():
-
-    os.makedirs(config.OUTPUT_DIR, exist_ok=True)
+    # Define pasta de saída relativa ao diretório pai (../recebidos)
+    base_dir = os.path.dirname(os.path.abspath(__file__))  # servidor/
+    output_dir = os.path.normpath(os.path.join(base_dir, os.pardir, config.OUTPUT_DIR))
+    os.makedirs(output_dir, exist_ok=True)
 
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.bind((config.SERVER_HOST, config.SERVER_PORT_PLAIN))
@@ -42,13 +44,28 @@ def start_server_plain():
 
         try:
             filename = recv_line(conn)
-            filesize = int(recv_line(conn))
 
-            print(f"[INFO] Recebendo '{filename}' ({filesize} bytes)")
+            # Se o cliente não envia tamanho, lemos até o socket fechar
+            print(f"[INFO] Recebendo '{filename}' (lendo até EOF)")
 
-            filedata = recv_exact(conn, filesize)
+            # Lê todo o restante até EOF
+            file_chunks = []
+            while True:
+                chunk = conn.recv(config.BUFFER_SIZE)
+                if not chunk:
+                    break
+                file_chunks.append(chunk)
 
-            filepath = os.path.join(config.OUTPUT_DIR, filename)
+            filedata = b"".join(file_chunks)
+
+            # Debug: mostrar quantos bytes recebidos
+            print(f"[DEBUG] Bytes recebidos: {len(filedata)}")
+
+            # Assegura extensão .txt
+            if not filename.lower().endswith('.txt'):
+                filename = filename + '.txt'
+
+            filepath = os.path.join(output_dir, filename)
             with open(filepath, "wb") as f:
                 f.write(filedata)
 

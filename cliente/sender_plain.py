@@ -21,8 +21,14 @@ def send_plain(filepath: str):
         client_socket.sendall(filename.encode() + b"\n")
 
         # Envia o conteúdo do arquivo em chunks
+        print("[DEBUG] Enviando conteúdo...")
         for chunk in read_file_chunks(filepath, config.BUFFER_SIZE):
+            print(f"[DEBUG] Chunk size: {len(chunk)}")
             client_socket.sendall(chunk)
+
+        # Fecha escrita para sinalar EOF ao servidor
+        print("[DEBUG] Encerrando envio (shutdown)...")
+        client_socket.shutdown(socket.SHUT_WR)
 
         print(f"[OK] Arquivo '{filename}' enviado sem TLS.")
 

@@ -44,6 +44,10 @@ def send_tls(filepath: str):
             print(f"[DEBUG] Chunk size: {len(chunk)}")
             tls_socket.sendall(chunk)
 
+        # Fecha escrita para sinalar EOF ao servidor
+        print("[DEBUG] Encerrando envio (shutdown)...")
+        tls_socket.shutdown(socket.SHUT_WR)
+
         print(f"[OK] Arquivo '{filename}' enviado com TLS.")
 
     except Exception as e:
