@@ -4,7 +4,7 @@ A repo made for an uni project that implements a client-server conection in both
 
 ## How to generate certificates and keys
 You must have [OpenSSL](https://slproweb.com/products/Win32OpenSSL.html) to run the script. It was also made with Windows Powershell in mind.
-After that, from the root directory, run `Python .\gerar_certificados.ps1`
+After that, from the root directory, run `.\gen_certificates.ps1`
 
 ## How to run the code
 Before all, the user has to be in the root directory i.e. TCPvTLS to run the code.
