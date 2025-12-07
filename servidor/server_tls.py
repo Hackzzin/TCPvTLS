@@ -4,6 +4,7 @@ import socket
 import ssl
 import os
 import config
+print("[INFO] Iniciando servidor com TLS...")
 
 def start_server_tls():
 
@@ -65,3 +66,6 @@ def start_server_tls():
             except:
                 pass
             print("[CONEXÃO TLS] Encerrada.\n")
+
+if __name__ == "__main__":
+    start_server_tls()
