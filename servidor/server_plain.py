@@ -1,51 +1,66 @@
-# server_plain.py — Servidor para conexões sem TLS
-
+# server_plain.py — Servidor sem TLS (protocolo robusto)
 import socket
 import os
 import config
 
+
+def recv_line(sock):
+    """Lê até '\n', sem TLS."""
+    data = b""
+    while not data.endswith(b"\n"):
+        chunk = sock.recv(1)
+        if not chunk:
+            raise ConnectionError("Conexão encerrada inesperadamente.")
+        data += chunk
+    return data.decode().strip()
+
+
+def recv_exact(sock, total_bytes):
+    """Lê exatamente total_bytes bytes."""
+    data = b""
+    while len(data) < total_bytes:
+        chunk = sock.recv(min(config.BUFFER_SIZE, total_bytes - len(data)))
+        if not chunk:
+            raise ConnectionError("Conexão encerrou antes do envio completo.")
+        data += chunk
+    return data
+
+
 def start_server_plain():
 
-    # Garante que a pasta de saída exista
     os.makedirs(config.OUTPUT_DIR, exist_ok=True)
 
-    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server_socket.bind((config.SERVER_HOST, config.SERVER_PORT_PLAIN))
-    server_socket.listen(5)
+    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server.bind((config.SERVER_HOST, config.SERVER_PORT_PLAIN))
+    server.listen(5)
 
-    print(f"[SERVIDOR-PLAIN] Aguardando conexões em {config.SERVER_HOST}:{config.SERVER_PORT_PLAIN} ...")
+    print(f"[SERVIDOR] Aguardando conexões em {config.SERVER_HOST}:{config.SERVER_PORT_PLAIN} ...")
 
     while True:
-        conn, addr = server_socket.accept()
+        conn, addr = server.accept()
         print(f"[CONEXÃO] Cliente conectado: {addr}")
 
         try:
-            # Recebe o nome do arquivo (até encontrar '\n')
-            filename = b""
-            while not filename.endswith(b"\n"):
-                filename += conn.recv(1)
+            filename = recv_line(conn)
+            filesize = int(recv_line(conn))
 
-            filename = filename.decode().strip()
+            print(f"[INFO] Recebendo '{filename}' ({filesize} bytes)")
 
-            # Caminho completo para salvar
+            filedata = recv_exact(conn, filesize)
+
             filepath = os.path.join(config.OUTPUT_DIR, filename)
-            print(f"[INFO] Recebendo arquivo: {filename}")
-
             with open(filepath, "wb") as f:
-                while True:
-                    data = conn.recv(config.BUFFER_SIZE)
-                    if not data:
-                        break
-                    f.write(data)
+                f.write(filedata)
 
-            print(f"[OK] Arquivo salvo em: {filepath}")
+            print(f"[OK] Arquivo salvo: {filepath}")
 
         except Exception as e:
-            print(f"[ERRO] Problema na recepção: {e}")
+            print(f"[ERRO] {e}")
 
         finally:
             conn.close()
             print("[CONEXÃO] Encerrada.\n")
+
 
 if __name__ == "__main__":
     start_server_plain()

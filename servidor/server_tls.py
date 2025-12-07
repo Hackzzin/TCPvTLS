@@ -1,61 +1,67 @@
-# server_tls.py — Servidor para conexões via TLS
+# server_tls.py — Servidor TLS robusto
 
 import socket
 import ssl
 import os
 import config
+
 print("[INFO] Iniciando servidor com TLS...")
+
+
+def recv_line(sock):
+    """Lê até '\n' — compatível com TLS."""
+    data = b""
+    while not data.endswith(b"\n"):
+        chunk = sock.recv(1)
+        if not chunk:
+            raise ConnectionError("Conexão encerrada inesperadamente.")
+        data += chunk
+    return data.decode().strip()
+
+
+def recv_exact(sock, total_bytes):
+    """Lê exatamente total_bytes bytes, mesmo com TLS."""
+    data = b""
+    while len(data) < total_bytes:
+        chunk = sock.recv(min(config.BUFFER_SIZE, total_bytes - len(data)))
+        if not chunk:
+            raise ConnectionError("Conexão encerrou antes do envio completo.")
+        data += chunk
+    return data
+
 
 def start_server_tls():
 
-    # Garante que a pasta de saída exista
     os.makedirs(config.OUTPUT_DIR, exist_ok=True)
 
-    # Cria contexto TLS
     context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-
-    # Carrega certificado e chave do servidor
     context.load_cert_chain(certfile=config.SERVER_CERT, keyfile=config.SERVER_KEY)
 
-    # (Opcional) Validar certificados de cliente — não obrigatório no trabalho
-    if config.CA_CERT:
-        context.load_verify_locations(config.CA_CERT)
-        # context.verify_mode = ssl.CERT_REQUIRED   # Só se quiser mutual TLS
+    raw_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    raw_sock.bind((config.SERVER_HOST, config.SERVER_PORT_TLS))
+    raw_sock.listen(5)
 
-    # Socket normal
-    raw_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    raw_socket.bind((config.SERVER_HOST, config.SERVER_PORT_TLS))
-    raw_socket.listen(5)
-
-    print(f"[SERVIDOR-TLS] Aguardando conexões em {config.SERVER_HOST}:{config.SERVER_PORT_TLS} ...")
+    print(f"[SERVIDOR TLS] Aguardando conexões em {config.SERVER_HOST}:{config.SERVER_PORT_TLS} ...")
 
     while True:
-        conn, addr = raw_socket.accept()
+        conn, addr = raw_sock.accept()
         print(f"[CONEXÃO TLS] Cliente conectado: {addr}")
 
         try:
-            # Encapsula o socket com TLS
             tls_conn = context.wrap_socket(conn, server_side=True)
 
-            # Recebe nome do arquivo
-            filename = b""
-            while not filename.endswith(b"\n"):
-                filename += tls_conn.recv(1)
+            filename = recv_line(tls_conn)
+            filesize = int(recv_line(tls_conn))
 
-            filename = filename.decode().strip()
+            print(f"[INFO] Recebendo '{filename}' ({filesize} bytes) via TLS")
+
+            filedata = recv_exact(tls_conn, filesize)
 
             filepath = os.path.join(config.OUTPUT_DIR, filename)
-            print(f"[INFO] Recebendo arquivo (TLS): {filename}")
-
-            # Recebe conteúdo
             with open(filepath, "wb") as f:
-                while True:
-                    data = tls_conn.recv(config.BUFFER_SIZE)
-                    if not data:
-                        break
-                    f.write(data)
+                f.write(filedata)
 
-            print(f"[OK] Arquivo salvo em: {filepath}")
+            print(f"[OK] Arquivo salvo: {filepath}")
 
         except Exception as e:
             print(f"[ERRO TLS] {e}")
@@ -66,6 +72,7 @@ def start_server_tls():
             except:
                 pass
             print("[CONEXÃO TLS] Encerrada.\n")
+
 
 if __name__ == "__main__":
     start_server_tls()
