@@ -39,7 +39,9 @@ def send_tls(filepath: str):
         tls_socket.sendall(filename.encode() + b"\n")
 
         # Envia conteúdo em chunks
+        print("[DEBUG] Enviando conteúdo...")
         for chunk in read_file_chunks(filepath, config.BUFFER_SIZE):
+            print(f"[DEBUG] Chunk size: {len(chunk)}")
             tls_socket.sendall(chunk)
 
         print(f"[OK] Arquivo '{filename}' enviado com TLS.")
