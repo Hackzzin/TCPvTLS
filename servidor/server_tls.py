@@ -1,5 +1,3 @@
-# server_tls.py — Servidor TLS robusto
-
 import socket
 import ssl
 import os
@@ -13,7 +11,7 @@ server_running = True
 
 
 def recv_line(sock):
-    """Lê até '\n' — compatível com TLS."""
+    #Lê até '\n'
     data = b""
     while not data.endswith(b"\n"):
         chunk = sock.recv(1)
@@ -24,7 +22,7 @@ def recv_line(sock):
 
 
 def recv_exact(sock, total_bytes):
-    """Lê exatamente total_bytes bytes, mesmo com TLS."""
+    #Lê total_bytes bytes
     data = b""
     while len(data) < total_bytes:
         chunk = sock.recv(min(config.BUFFER_SIZE, total_bytes - len(data)))
@@ -48,7 +46,7 @@ def start_server_tls():
     raw_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     raw_sock.bind((config.SERVER_HOST, config.SERVER_PORT_TLS))
     raw_sock.listen(5)
-    raw_sock.settimeout(1.0)  # Define timeout para permitir verificar flag de parada
+    raw_sock.settimeout(1.0)  # Define timeout para verificar flag de parada
 
     print(f"[SERVIDOR TLS] Aguardando conexões em {config.SERVER_HOST}:{config.SERVER_PORT_TLS} ...")
     print("[DICA] Digite 'x' e pressione Enter para parar o servidor.\n")
@@ -80,13 +78,12 @@ def start_server_tls():
 
                 filedata = b"".join(file_chunks)
 
-                # Debug: mostrar quantos bytes recebidos
+                
                 print(f"[DEBUG] Bytes recebidos: {len(filedata)}")
 
-                # Assegura extensão .txt
                 if not filename.lower().endswith('.txt'):
                     filename = filename + '.txt'
-
+                # Salva o arquivo recebido
                 filepath = os.path.join(output_dir, filename)
                 with open(filepath, "wb") as f:
                     f.write(filedata)
@@ -121,7 +118,7 @@ def start_server_tls():
 
 
 def input_listener_tls():
-    """Escuta entrada do usuário e sinaliza parada quando 'x' é digitado."""
+    #Escuta entrada do usuário e sinaliza parada quando 'x' é digitado
     global server_running
     while server_running:
         try:

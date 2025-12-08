@@ -1,4 +1,3 @@
-# config.py — Configurações básicas do servidor
 import os
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))      # servidor/
@@ -9,7 +8,7 @@ SERVER_KEY  = os.path.join(ROOT_DIR, "certificados", "servidor.key")
 CA_CERT     = os.path.join(ROOT_DIR, "certificados", "ca.crt")
 
 # Endereços e portas de escuta
-SERVER_HOST = "0.0.0.0"     # Aceita conexões externas também
+SERVER_HOST = "0.0.0.0"     
 SERVER_PORT_PLAIN = 5000    # Porta para conexões sem TLS
 SERVER_PORT_TLS = 5001      # Porta para conexões TLS
 

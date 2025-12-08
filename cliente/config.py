@@ -1,7 +1,6 @@
-# Configurações básicas do cliente
 
 # Endereço e porta do servidor
-SERVER_HOST = "127.0.0.1"   # Pode ser alterado caso o servidor rode em outra máquina
+SERVER_HOST = "127.0.0.1"   
 SERVER_PORT_PLAIN = 5000    # Porta para conexões sem TLS
 SERVER_PORT_TLS = 5001      # Porta para conexões com TLS
 
@@ -9,5 +8,4 @@ SERVER_PORT_TLS = 5001      # Porta para conexões com TLS
 BUFFER_SIZE = 4 * 1024  # 4 KB
 
 # Caminho para o certificado da CA (usado apenas no modo TLS)
-# Caso você não valide o certificado do servidor, pode deixar None
 CA_CERT_PATH = "certificados/ca.crt"

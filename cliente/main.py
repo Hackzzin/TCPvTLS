@@ -1,5 +1,3 @@
-# main.py — Cliente interativo
-
 import os
 import config
 from sender_plain import send_plain

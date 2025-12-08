@@ -15,7 +15,7 @@ tls_times = []
 
 # Captura ao vivo
 capture = pyshark.LiveCapture(
-    interface=r'\Device\NPF_Loopback',  # interface correta para loopback
+    interface=r'\Device\NPF_Loopback', 
     bpf_filter=f'tcp port {client_config.SERVER_PORT_PLAIN} or tcp port {client_config.SERVER_PORT_TLS}',
     tshark_path=TSHARK_PATH  # caminho exato do TShark
 )
@@ -39,13 +39,12 @@ try:
                 tls_times.append(timestamp)
 
         except AttributeError:
-            # Ignora pacotes que não possuem TCP
             continue
 
 except (KeyboardInterrupt, EOFError):
     print("\nCaptura finalizada!")
 
-# --- Análise de tamanho ---
+
 print("\n=== Análise de Tamanho ===")
 if plain_sizes:
     print("=== Texto plano ===")
@@ -63,7 +62,7 @@ if tls_sizes:
 else:
     print("Nenhum pacote TLS capturado.")
 
-# --- Análise de tempo ---
+
 print("\n=== Análise de Latência ===")
 if plain_times:
     plain_latency_total = plain_times[-1] - plain_times[0]

@@ -14,7 +14,6 @@ Get-Content $envFile | ForEach-Object {
     }
 }
 
-# Agora a variável está disponível como $env:OPENSSL_PATH
 if (-Not $env:OPENSSL_PATH) {
     Write-Host "[ERRO] OPENSSL_PATH não definido no .env."
     exit 1
@@ -22,14 +21,8 @@ if (-Not $env:OPENSSL_PATH) {
 
 $OpenSSL = $env:OPENSSL_PATH
 
-# ================================
-# Script PowerShell para gerar:
-# - CA (ca.crt, ca.key)
-# - Certificado Servidor (servidor.crt, servidor.key)
-# - Certificado Cliente (cliente.crt, cliente.key)
-# ================================
 
-# Caminho da saída (path absoluto baseado no script root para evitar diretórios aninhados)
+# Caminho da saída dos certificados
 $certDir = "certificados"
 $fullCertDir = Join-Path $PSScriptRoot $certDir
 if (-Not (Test-Path $fullCertDir)) {
@@ -43,7 +36,7 @@ Set-Location $fullCertDir
 Write-Host "`n[1/8] Gerando CA..."
 & $OpenSSL genrsa -out ca.key 4096
 
-# Cria arquivo de extensões para CA (marca basicConstraints como critical)
+# Cria arquivo de extensões para CA 
 @"
 [ v3_ca ]
 basicConstraints = critical, CA:TRUE
@@ -52,8 +45,6 @@ authorityKeyIdentifier = keyid,issuer
 keyUsage = keyCertSign, cRLSign
 "@ | Set-Content ca_ext.ext
 
-# Alguns builds do OpenSSL no Windows reclamam de opções combinadas em 'req -x509'.
-# Em vez disso, criaremos um CSR para a CA e depois assinamos com 'x509 -req -signkey'.
 & $OpenSSL req -new -key ca.key -out ca.csr -subj "/CN=MinhaCA"
 & $OpenSSL x509 -req -in ca.csr -signkey ca.key -days 3650 -sha256 -out ca.crt -extfile ca_ext.ext -extensions v3_ca
 

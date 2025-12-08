@@ -9,7 +9,7 @@ server_running = True
 
 
 def recv_line(sock):
-    """Lê até '\n', sem TLS."""
+    #Lê até '\n', sem TLS
     data = b""
     while not data.endswith(b"\n"):
         chunk = sock.recv(1)
@@ -20,7 +20,7 @@ def recv_line(sock):
 
 
 def recv_exact(sock, total_bytes):
-    """Lê exatamente total_bytes bytes."""
+    #Lê exatamente total_bytes bytes
     data = b""
     while len(data) < total_bytes:
         chunk = sock.recv(min(config.BUFFER_SIZE, total_bytes - len(data)))
@@ -41,7 +41,7 @@ def start_server_plain():
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.bind((config.SERVER_HOST, config.SERVER_PORT_PLAIN))
     server.listen(5)
-    server.settimeout(1.0)  # Define timeout para permitir verificar flag de parada
+    server.settimeout(1.0) # Timeout para checar flag de parada
 
     print(f"[SERVIDOR] Aguardando conexões em {config.SERVER_HOST}:{config.SERVER_PORT_PLAIN} ...")
     print("[DICA] Digite 'x' e pressione Enter para parar o servidor.\n")
@@ -67,13 +67,12 @@ def start_server_plain():
 
                 filedata = b"".join(file_chunks)
 
-                # Debug: mostrar quantos bytes recebidos
                 print(f"[DEBUG] Bytes recebidos: {len(filedata)}")
 
-                # Assegura extensão .txt
                 if not filename.lower().endswith('.txt'):
                     filename = filename + '.txt'
 
+                # Salva o arquivo recebido
                 filepath = os.path.join(output_dir, filename)
                 with open(filepath, "wb") as f:
                     f.write(filedata)
@@ -102,7 +101,7 @@ def start_server_plain():
 
 
 def input_listener_plain():
-    """Escuta entrada do usuário e sinaliza parada quando 'x' é digitado."""
+    #Escuta entrada do usuário e sinaliza parada quando 'x' é digitado
     global server_running
     while server_running:
         try:

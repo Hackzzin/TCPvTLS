@@ -1,12 +1,10 @@
-# sender_tls.py — Envio usando TLS
-
 import socket
 import ssl
 from utils import read_file_chunks, file_exists, get_filename
 import config
 
 def send_tls(filepath: str):
-    """Envia um arquivo usando TLS para garantir confidencialidade."""
+    #Envia um arquivo usando TLS para garantir confidencialidade
 
     if not file_exists(filepath):
         print(f"[ERRO] Arquivo não encontrado: {filepath}")
@@ -16,9 +14,7 @@ def send_tls(filepath: str):
         # Cria o contexto TLS (modo cliente)
         context = ssl.create_default_context()
 
-        # Se você quiser validar o certificado do servidor,
-        # assegure que possui o arquivo CA (CA_CERT_PATH)
-        # Caso não valide, você pode usar: ssl._create_unverified_context()
+        # Configura verificação do certificado do servidor
         if config.CA_CERT_PATH:
             context.load_verify_locations(config.CA_CERT_PATH)
 
@@ -54,7 +50,7 @@ def send_tls(filepath: str):
         print(f"[ERRO] Falha no envio TLS: {e}")
 
     finally:
-        # Fecha socket TLS (e o underlying socket)
+        # Fecha socket TLS 
         try:
             tls_socket.close()
         except:

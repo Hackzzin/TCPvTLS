@@ -1,11 +1,9 @@
-# sender_plain.py — Envio sem TLS (texto plano)
-
 import socket
 from utils import read_file_chunks, file_exists, get_filename
 import config
 
 def send_plain(filepath: str):
-    """Envia um arquivo para o servidor usando TCP sem criptografia."""
+    #Envia um arquivo para o servidor usando TCP sem criptografia
 
     if not file_exists(filepath):
         print(f"[ERRO] Arquivo não encontrado: {filepath}")
@@ -16,7 +14,7 @@ def send_plain(filepath: str):
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client_socket.connect((config.SERVER_HOST, config.SERVER_PORT_PLAIN))
 
-        # Envia primeiro o nome do arquivo (simples protocolo)
+        # Envia primeiro o nome do arquivo para o servidor
         filename = get_filename(filepath)
         client_socket.sendall(filename.encode() + b"\n")
 
